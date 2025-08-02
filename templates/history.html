@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Detection History - Apple Disease Detector{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">Detection History</h1>
+                    <p class="text-muted mb-0">
+                        {% if detections.total > 0 %}
+                            Showing {{ detections.per_page * (detections.page - 1) + 1 }} to 
+                            {{ detections.per_page * (detections.page - 1) + detections.items|length }} 
+                            of {{ detections.total }} results
+                        {% else %}
+                            No detections found
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-2"></i>
+                    New Detection
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if detections.items %}
+        <!-- Detection Cards -->
+        <div class="row">
+            {% for detection in detections.items %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Image -->
+                        <div class="position-relative">
+                            <img src="{{ url_for('uploaded_file', filename=detection.filename) }}" 
+                                 class="card-img-top" alt="Apple image" style="height: 200px; object-fit: cover;">
+                            
+                            <!-- Status Badge -->
+                            <div class="position-absolute top-0 start-0 p-2">
+                                <span class="badge bg-{{ detection.disease_severity_class }}">
+                                    {% if detection.disease_type == 'healthy' %}
+                                        <i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {% elif detection.disease_type in ['blotch_apple', 'scab_apple'] %}
+                                        <i data-feather="alert-triangle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {% else %}
+                                        <i data-feather="x-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {% endif %}
+                                    {{ detection.disease_display_name }}
+                                </span>
+                            </div>
+
+                            <!-- Confidence Badge -->
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <span class="badge bg-{{ detection.confidence_class }}">
+                                    {{ detection.confidence | round(2) }}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body d-flex flex-column">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title mb-2">{{ detection.original_filename }}</h6>
+                                <p class="card-text text-muted small mb-3">
+                                    <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {{ detection.formatted_timestamp }}
+                                </p>
+                                
+                                <!-- Confidence Progress -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted">Confidence</small>
+                                        <small class="fw-semibold text-{{ detection.confidence_class }}">
+                                            {{ detection.confidence | round(2) }}%
+                                        </small>
+                                    </div>
+                                    <div class="progress" style="height: 4px;">
+                                        <div class="progress-bar bg-{{ detection.confidence_class }}" 
+                                             role="progressbar" 
+                                             style="width: {{ detection.confidence | round(2) }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <a href="{{ url_for('result', detection_id=detection.id) }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i data-feather="eye" class="me-1"></i>
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if detections.pages > 1 %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <nav aria-label="Detection history pagination">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous Page -->
+                            {% if detections.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('history', page=detections.prev_num) }}">
+                                        <i data-feather="chevron-left" style="width: 16px; height: 16px;"></i>
+                                        Previous
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        <i data-feather="chevron-left" style="width: 16px; height: 16px;"></i>
+                                        Previous
+                                    </span>
+                                </li>
+                            {% endif %}
+
+                            <!-- Page Numbers -->
+                            {% for page_num in detections.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != detections.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('history', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            <!-- Next Page -->
+                            {% if detections.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('history', page=detections.next_num) }}">
+                                        Next
+                                        <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        Next
+                                        <i data-feather="chevron-right" style="width: 16px; height: 16px;"></i>
+                                    </span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i data-feather="image" style="width: 96px; height: 96px;" class="text-muted"></i>
+                    </div>
+                    <h3 class="mb-3">No Detection History</h3>
+                    <p class="text-muted mb-4">
+                        You haven't uploaded any images for disease detection yet. 
+                        Start by uploading your first apple image to see results here.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="upload" class="me-2"></i>
+                        Upload First Image
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Summary Stats -->
+    {% if detections.total > 0 %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i data-feather="bar-chart-2" class="me-2"></i>
+                            Detection Summary
+                        </h5>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="p-3">
+                                    <h3 class="text-primary mb-1">{{ detections.total }}</h3>
+                                    <small class="text-muted">Total Detections</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border-start">
+                                    <h3 class="text-success mb-1">
+                                        {{ detections.items | selectattr('disease_type', 'equalto', 'Healthy_Apple') | list | length }}
+                                    </h3>
+                                    <small class="text-muted">Healthy Apples</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border-start">
+                                    <h3 class="text-warning mb-1">
+                                        {{ (detections.items | selectattr('disease_type', 'equalto', 'Blotch_Apple') | list | length) + 
+                                           (detections.items | selectattr('disease_type', 'equalto', 'Scab_Apple') | list | length) }}
+                                    </h3>
+                                    <small class="text-muted">Diseased Apples</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border-start">
+                                    <h3 class="text-danger mb-1">
+                                        {{ detections.items | selectattr('disease_type', 'equalto', 'Rot_Apple') | list | length }}
+                                    </h3>
+                                    <small class="text-muted">Rotting Apples</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize feather icons after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}

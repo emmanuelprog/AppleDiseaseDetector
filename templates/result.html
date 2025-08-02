@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Detection Result - Apple Disease Detector{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="text-center">
+                <h1 class="display-5 fw-bold mb-3">Detection Results</h1>
+                <p class="lead text-muted">Analysis completed on {{ detection.formatted_timestamp }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Result -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="row g-0">
+                    <!-- Image Section -->
+                    <div class="col-md-6">
+                        <div class="p-4">
+                            <img src="{{ url_for('uploaded_file', filename=detection.filename) }}" 
+                                 class="img-fluid rounded" alt="Analyzed apple image">
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i data-feather="file" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    {{ detection.original_filename }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Result Section -->
+                    <div class="col-md-6">
+                        <div class="p-4">
+                            <!-- Disease Type -->
+                            <div class="mb-4">
+                                <h3 class="mb-3">
+                                    <span class="badge bg-{{ detection.disease_severity_class }} bg-opacity-20 text-{{ detection.disease_severity_class }} fs-6 p-2">
+                                        {% if detection.disease_type == 'Healthy_Apple' %}
+                                            <i data-feather="check-circle" class="me-2"></i>
+                                        {% elif detection.disease_type in ['Blotch_Apple', 'Scab_Apple'] %}
+                                            <i data-feather="alert-triangle" class="me-2"></i>
+                                        {% else %}
+                                            <i data-feather="x-circle" class="me-2"></i>
+                                        {% endif %}
+                                        {{ detection.disease_display_name }}
+                                    </span>
+                                </h3>
+                            </div>
+
+                            <!-- Confidence Level -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold">Confidence Level</span>
+                                    <span class="text-{{ detection.confidence_class }} fw-bold">{{ detection.confidence | round(2) }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-{{ detection.confidence_class }}" 
+                                         role="progressbar" 
+                                         style="width: {{ detection.confidence | round(2) }}%" 
+                                         aria-valuenow="{{ detection.confidence | round(2) }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        {% if detection.confidence >= 90 %}
+                                            <i data-feather="check-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                            Very High Confidence
+                                        {% elif detection.confidence >= 70 %}
+                                            <i data-feather="alert-triangle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                            Moderate Confidence
+                                        {% else %}
+                                            <i data-feather="help-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                                            Low Confidence - Consider retaking image
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                    <i data-feather="upload" class="me-2"></i>
+                                    Analyze Another Image
+                                </a>
+                                <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                                    <i data-feather="clock" class="me-2"></i>
+                                    View History
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disease Information -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i data-feather="info" class="me-2"></i>
+                        Disease Information
+                    </h5>
+                    
+                    {% set disease_info = {
+                        'Healthy_Apple': {
+                            'description': 'The apple appears to be healthy with no visible signs of disease.',
+                            'severity': 'None',
+                            'recommendations': 'Continue regular care and monitoring.',
+                            'icon': 'check-circle',
+                            'color': 'success'
+                        },
+                        'Blotch_Apple': {
+                            'description': 'Apple blotch is a fungal disease that causes dark, irregular spots on apple skin.',
+                            'severity': 'Moderate',
+                            'recommendations': 'Remove affected fruits, improve air circulation, apply fungicide if necessary.',
+                            'icon': 'alert-triangle',
+                            'color': 'warning'
+                        },
+                        'Scab_Apple': {
+                            'description': 'Apple scab is a fungal disease causing dark, scaly lesions on apple skin and leaves.',
+                            'severity': 'Moderate to High',
+                            'recommendations': 'Remove infected plant material, improve air circulation, apply preventive fungicide sprays.',
+                            'icon': 'alert-triangle',
+                            'color': 'warning'
+                        },
+                        'Rot_Apple': {
+                            'description': 'Apple rot is bacterial or fungal decay causing browning and deterioration of apple tissue.',
+                            'severity': 'High',
+                            'recommendations': 'Remove and dispose of affected fruits immediately to prevent spread. Check storage conditions.',
+                            'icon': 'x-circle',
+                            'color': 'danger'
+                        }
+                    } %}
+                    
+                    {% set info = disease_info[detection.disease_type] %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-3">{{ info.description }}</p>
+                            
+                            <div class="mb-3">
+                                <strong class="text-{{ info.color }}">
+                                    <i data-feather="alert-circle" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    Severity: {{ info.severity }}
+                                </strong>
+                            </div>
+                            
+                            <div>
+                                <h6 class="fw-semibold mb-2">Recommendations:</h6>
+                                <p class="text-muted mb-0">{{ info.recommendations }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-4 bg-{{ info.color }} bg-opacity-10 rounded">
+                                <i data-feather="{{ info.icon }}" class="text-{{ info.color }} mb-3" style="width: 64px; height: 64px;"></i>
+                                <h6 class="text-{{ info.color }} fw-semibold">{{ detection.disease_display_name }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="alert alert-info">
+                <i data-feather="info" class="me-2"></i>
+                <strong>Disclaimer:</strong> This is an automated detection system by a Machine Learning Model developed to detect Apple disease. 
+                This model was trained to detect healthy, blotch, scab and rot apple.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize feather icons after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}

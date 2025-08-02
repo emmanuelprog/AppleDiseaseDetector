@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Apple Image - Apple Disease Detector{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <div class="mb-4">
+                <i data-feather="camera" style="width: 64px; height: 64px;" class="text-primary"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">Apple Disease Detection</h1>
+            <p class="lead text-muted mb-4">
+                Upload an image of your apple to detect potential diseases including blotch, scab, and rot conditions.
+                Our advanced system provides instant analysis with confidence ratings.
+            </p>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <div class="mb-4">
+                            <label for="file" class="form-label fw-semibold">
+                                <i data-feather="upload" class="me-2"></i>
+                                Select Apple Image
+                            </label>
+                            <input type="file" class="form-control form-control-lg" id="file" name="file" 
+                                   accept="image/png,image/jpg,image/jpeg,image/webp" required>
+                            <div class="form-text">
+                                <i data-feather="info" class="me-1" style="width: 14px; height: 14px;"></i>
+                                Supported formats: PNG, JPG, JPEG, WEBP (Max 16MB)
+                            </div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="mb-4" style="display: none;">
+                            <div class="text-center">
+                                <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                                <div class="mt-2">
+                                    <small class="text-muted">Image preview</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i data-feather="zap" class="me-2"></i>
+                                Analyze Image
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="row mt-5">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i data-feather="check-circle" class="text-success mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title text-success">Healthy Detection</h5>
+                    <p class="card-text text-muted">
+                        Identifies healthy apples with no signs of disease or damage.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i data-feather="alert-triangle" class="text-warning mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title text-warning">Disease Detection</h5>
+                    <p class="card-text text-muted">
+                        Detects common apple diseases including blotch and scab conditions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 bg-danger bg-opacity-10 border-danger">
+                <div class="card-body text-center">
+                    <i data-feather="x-circle" class="text-danger mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="card-title text-danger">Rot Detection</h5>
+                    <p class="card-text text-muted">
+                        Identifies severe conditions like apple rot that require immediate attention.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Instructions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i data-feather="help-circle" class="me-2"></i>
+                        How to Use
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">
+                                    <span class="badge bg-primary me-2">1</span>
+                                    Take a Clear Photo
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    Capture a well-lit image of the apple with visible surface details.
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">
+                                    <span class="badge bg-primary me-2">2</span>
+                                    Upload the Image
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    Select your image file and click "Analyze Image" to begin detection.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">
+                                    <span class="badge bg-primary me-2">3</span>
+                                    View Results
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    Get instant results with disease type and confidence level.
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-semibold">
+                                    <span class="badge bg-primary me-2">4</span>
+                                    Track History
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    View your previous analyses in the history section.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Image preview functionality
+    document.getElementById('file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+
+    // Form submission handling
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const fileInput = document.getElementById('file');
+        
+        if (!fileInput.files[0]) {
+            e.preventDefault();
+            alert('Please select an image file first.');
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Analyzing...';
+    });
+</script>
+{% endblock %}
